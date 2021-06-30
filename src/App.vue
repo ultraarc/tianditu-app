@@ -12,13 +12,14 @@
       <el-button @click="setStyle('indigo')">深蓝主题</el-button>
       <el-button @click="setStyle('black')">黑色主题</el-button>
       <el-button @click="getMapStatus()">获取当前地图信息</el-button>
+      <br />
+      <span>设置可缩放范围：</span
+      ><el-slider v-model="scaleRange" :max="18" range show-stops></el-slider>
     </div>
   </div>
 </template>
 
 <script>
-// import HelloWorld from "./components/HelloWorld.vue";
-
 export default {
   name: "App",
   components: {
@@ -33,6 +34,7 @@ export default {
       },
       zoom: 4,
       canDrag: true,
+      scaleRange: [1, 17],
     };
   },
   mounted() {
@@ -111,6 +113,15 @@ export default {
       };
     },
   },
+  watch: {
+    scaleRange: {
+      handler(val) {
+        this.map.setMinZoom(val[0]);
+        this.map.setMaxZoom(val[1]);
+      },
+      deep: true,
+    },
+  },
 };
 </script>
 
@@ -138,10 +149,11 @@ body {
 .control-panel {
   width: 100%;
   bottom: 0;
-  height: 100px;
+  height: 150px;
   position: fixed;
   z-index: 99999;
   background: #ffffffee;
-  padding: 5px;
+  padding: 10px;
+  box-sizing: border-box;
 }
 </style>
