@@ -15,11 +15,42 @@
       <br />
       <span>设置可缩放范围：</span
       ><el-slider v-model="scaleRange" :max="18" range show-stops></el-slider>
+      <div></div>
     </div>
   </div>
 </template>
 
 <script>
+import axios from "axios";
+
+/**
+ * 添加地图图层
+ * @param gbcode  行政区划code
+ * @param regions 行政区划信息
+ * @param level   s:代表由父GBCODE找子GBCODE, m:代表查找同级GBCODE, p:代表查找父级并且与之同级的GBCODE 边界信息
+ * @param style   样式引起的重绘标识
+ */
+function requestData(gbcode, regions, level) {
+  resultStore = {};
+  // 叠加当前选择的所有统计数据专题图
+  for (var j in checkedNodes) {
+    var cur = checkedNodes[j];
+    // 添加额外的查询条件：1、行政区划code; 2、时间年份; 3、列类型：pro->地图属性框中的属性标志，col->表格中的属性标志，
+    cur.gbcode = gbcode;
+    // 级别
+    cur.type = level;
+    // 年份
+    // 统计表引起的查询
+    if (curNode.year) {
+      cur.year = curNode.year;
+    } else {
+      cur.year = listDates[cur.code][0].year;
+    }
+    // 回调获取当前行政区的专题数据
+    requestDatasFunc(cur, successFunc(regions, cur), errorFunc);
+  }
+}
+
 export default {
   name: "App",
   components: {
@@ -37,12 +68,25 @@ export default {
       scaleRange: [1, 17],
     };
   },
-  mounted() {
+  async mounted() {
     this.map = new T.Map("map-container");
     this.map.centerAndZoom(
       new T.LngLat(this.center.lng, this.center.lat),
       this.zoom
     );
+
+    let border = await axios.get(
+      "https://zhfw.tianditu.gov.cn/zhfw/border?gbcode=156000000&type=s"
+    );
+    console.log(border);
+    var regions = JSON.parse(border.geodata);
+    for (var f in regions.features) {
+      regions.features[f] = L.GeoJSON.Encoded.prototype._decodeFeature(
+        regions.features[f]
+      );
+    }
+    // regionsCache[gbcode] = regions;
+    requestData(gbcode, regions, "s");
   },
   computed: {
     dragText() {
@@ -125,7 +169,7 @@ export default {
 };
 </script>
 
-<style>
+<style lang="less">
 html,
 body {
   height: 100%;
@@ -147,13 +191,19 @@ body {
   height: 100%;
 }
 .control-panel {
-  width: 100%;
-  bottom: 0;
-  height: 150px;
+  width: 200px;
+  top: 10px;
+  left: 10px;
+  height: auto;
   position: fixed;
   z-index: 99999;
   background: #ffffffee;
   padding: 10px;
   box-sizing: border-box;
+  box-shadow: 0 0 5px #2c3e5063;
+  border-radius: 5px;
+  .el-button {
+    margin: 5px;
+  }
 }
 </style>
