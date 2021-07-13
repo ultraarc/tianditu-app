@@ -23,34 +23,6 @@
 <script>
 import axios from "axios";
 
-/**
- * 添加地图图层
- * @param gbcode  行政区划code
- * @param regions 行政区划信息
- * @param level   s:代表由父GBCODE找子GBCODE, m:代表查找同级GBCODE, p:代表查找父级并且与之同级的GBCODE 边界信息
- * @param style   样式引起的重绘标识
- */
-function requestData(gbcode, regions, level) {
-  resultStore = {};
-  // 叠加当前选择的所有统计数据专题图
-  for (var j in checkedNodes) {
-    var cur = checkedNodes[j];
-    // 添加额外的查询条件：1、行政区划code; 2、时间年份; 3、列类型：pro->地图属性框中的属性标志，col->表格中的属性标志，
-    cur.gbcode = gbcode;
-    // 级别
-    cur.type = level;
-    // 年份
-    // 统计表引起的查询
-    if (curNode.year) {
-      cur.year = curNode.year;
-    } else {
-      cur.year = listDates[cur.code][0].year;
-    }
-    // 回调获取当前行政区的专题数据
-    requestDatasFunc(cur, successFunc(regions, cur), errorFunc);
-  }
-}
-
 export default {
   name: "App",
   components: {
@@ -69,24 +41,24 @@ export default {
     };
   },
   async mounted() {
-    this.map = new T.Map("map-container");
-    this.map.centerAndZoom(
-      new T.LngLat(this.center.lng, this.center.lat),
-      this.zoom
-    );
+    // this.map = new T.Map("map-container");
+    // this.map.centerAndZoom(
+    //   new T.LngLat(this.center.lng, this.center.lat),
+    //   this.zoom
+    // );
+    // let border = await axios.get(
+    //   "https://zhfw.tianditu.gov.cn/zhfw/border?gbcode=156000000&type=s"
+    // );
+    // console.log(border);
+    // var regions = JSON.parse(border.geodata);
+    // for (var f in regions.features) {
+    //   regions.features[f] = L.GeoJSON.Encoded.prototype._decodeFeature(
+    //     regions.features[f]
+    //   );
+    // }
 
-    let border = await axios.get(
-      "https://zhfw.tianditu.gov.cn/zhfw/border?gbcode=156000000&type=s"
-    );
-    console.log(border);
-    var regions = JSON.parse(border.geodata);
-    for (var f in regions.features) {
-      regions.features[f] = L.GeoJSON.Encoded.prototype._decodeFeature(
-        regions.features[f]
-      );
-    }
-    // regionsCache[gbcode] = regions;
-    requestData(gbcode, regions, "s");
+    let mymap = L.map("map-container").setView([51.505, -0.09], 13);
+    console.log("mymap", mymap);
   },
   computed: {
     dragText() {
@@ -160,8 +132,8 @@ export default {
   watch: {
     scaleRange: {
       handler(val) {
-        this.map.setMinZoom(val[0]);
-        this.map.setMaxZoom(val[1]);
+        // this.map.setMinZoom(val[0]);
+        // this.map.setMaxZoom(val[1]);
       },
       deep: true,
     },
